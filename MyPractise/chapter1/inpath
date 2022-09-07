@@ -1,0 +1,51 @@
+#!/bin/bash
+# inpath -- 验证制定程序是否有效，或者能否在path目录列表中找到。
+
+#in_path()函数
+in_path()
+{
+cmd=$1 ourpath=$2 result=1
+oldIFS=$IFS IFS=":"
+for directory in $ourpath
+do
+  echo $directory
+  if [ -x $directory/$cmd ]; then
+    result=0
+  fi
+done
+
+IFS=$oldIFS
+return $result
+}
+
+#checkForCmdInPath()函数
+checkForCmdInPath()
+{
+  var=$1
+
+  if [ "$var" != "" ]; then
+    if [ "${var:0:1}" = "/" ] ; then
+      if [ ! -x $var ] ; then
+	    return 1
+      fi
+    elif ! in_path $var "$PATH" ; then
+      return 2
+    fi
+  fi
+}
+
+#脚本使用格式
+if [ $# -ne 1 ] ; then
+	echo "Usage: $0 command" >&2
+	exit 1
+fi
+
+#获取用户输入并传递给相应的函数
+checkForCmdInPath "$1"
+case $? in
+	0 ) echo "$1 found in PATH"                 ;;
+	1 ) echo "$1 not found or not executable"   ;;
+	2 ) echo "$1 not fount in PATH"             ;;
+esac
+
+exit 0
