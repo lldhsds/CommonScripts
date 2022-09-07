@@ -1,0 +1,61 @@
+#!/bin/bash
+# nicenumber -- 将给定的数字以逗号分割的形式显示出来
+# 接受两个选项：DD(decimal point delimiter,小数分割位)和TD(Thoudands delimiter,千位分隔符)
+# 美化数字显示，如果指定了第二个参数，则将输出回显在stdout
+
+nicenumber()
+{
+  integer=$(echo $1 | cut -d. -f1)
+  decimal=$(echo $1 | cut -d. -f2)
+
+  #检查数字是否不为整数
+  if [ "$decimal" != "$1" ]; then
+    #有小数部分，将其保存起来
+    result="${DD:='.'}$decimal"
+  fi
+
+  thousands=$integer
+
+  while [ $thousands -gt 999 ]; do
+    remainder=$((thousands % 1000))
+
+    #需要变量remainder中包含3个数字
+    while [ ${#remainder} -lt 3 ]; do
+      remainder="0$remainder"
+    done
+
+    result="${TD:=","}${remainder}${result}"  #从有向左构建最终结果
+    thousands=$(($thousands / 1000))         #千位分隔符左侧部分
+  done
+  
+  nicenum="${thousands}${result}"
+  if [ ! -z $2 ] ; then
+    echo $nicenum
+  fi
+}
+  
+  DD="."   # 小数分隔符，分割整数部分和小数部分
+  TD=","   # 千位分隔符，隔3隔数字出现一次
+
+  #主脚本开始
+  #================
+
+  while getopts "d:t:" opt; do
+    case $opt in
+      d ) DD="$OPTARG"   ;;
+      t ) TD="$OPTARG"   ;;
+    esac
+  done
+  shift $(($OPTIND - 1))
+
+  # 输入验证
+  if [ $# -eq 0 ] ; then
+    echo "Usage: $(basename $0) [-d c] [-t c] numeric_value"
+    echo " -d specifies the decimal point delimiter (default '.')"
+    echo " -t specifies the thousands delimiter (default ',')"
+    exit 0
+  fi
+
+  nicenumber $1 1
+
+  exit 0
