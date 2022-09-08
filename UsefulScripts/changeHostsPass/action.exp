@@ -1,0 +1,15 @@
+#!/bin/expect
+#上述表示expect解释器执行
+
+set ipaddr [lindex $argv 0]
+set passwd [lindex $argv 1]
+set timeout 30
+spawn ssh root@$ipaddr
+expect {
+"yes/no" {send "yes\r";exp_continue}
+"password" {send "$passwd\r"}
+}
+expect "#"
+send "echo 123456 | passwd --stdin root\r"
+send "exit\r"
+expect eof
