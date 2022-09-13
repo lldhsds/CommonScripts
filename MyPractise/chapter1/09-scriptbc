@@ -1,0 +1,18 @@
+#!/bin/bash
+# scriptbc -- Wrapper for 'bc' that returns the result of a calculation
+
+#根据传入的参数设置精度，如果不传入-p则默认精度为2
+if [ "$1" = "-p" ] ; then
+  precision=$2
+  shift 2
+else
+  precision=2 # default
+fi
+
+bc -q << EOF
+scale=$precision
+$*
+quit
+EOF
+
+exit 0
